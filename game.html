@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Game of "Bof"</title>
+	<meta charset="utf-8" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+<header>
+    <hgroup>
+        <h1>BOF</h1>
+        <h3>Game of Three Straight</h3>
+    </hgroup>
+</header>
+
+<div id="game" class="flex-container">
+    <div id="blackside" class="flex-item-side">
+        <table id="blackpieces">
+            <tr><td><img id="bb1" src="black.png" class="blackball" /></td></tr>
+            <tr><td><img id="bb2" src="black.png" class="blackball" /></td></tr>
+            <tr><td><img id="bb3" src="black.png" class="blackball" /></td></tr>
+        </table>
+    </div>
+    <div id="board" class="flex-item-middle">
+        <table id="gameboard">
+            <tr><td data-row="0" data-col="0"></td><td data-row="0" data-col="1"></td><td data-row="0" data-col="2"></td></tr>
+            <tr><td data-row="1" data-col="0"></td><td data-row="1" data-col="1"></td><td data-row="1" data-col="2"></td></tr>
+            <tr><td data-row="2" data-col="0"></td><td data-row="2" data-col="1"></td><td data-row="2" data-col="2"></td></tr>
+        </table>
+    </div>
+    <div id="whiteside" class="flex-item-side">
+        <table id="whitepieces">
+            <tr><td><img id="wb1" src="white.png" class="whiteball" /></td></tr>
+            <tr><td><img id="wb2" src="white.png" class="whiteball" /></td></tr>
+            <tr><td><img id="wb3" src="white.png" class="whiteball" /></td></tr>
+        </table>
+    </div>
+</div>
+<div id="controls">
+    <table id="ctrlTable">
+        <tr>
+            <td>
+                <label for="txtRound">Round: </label>
+                <input type="text" id="txtRound" disabled="true" />
+            </td>
+            <td>
+                <label for="btnTurn">To play: </label>
+                <input type="button" id="btnTurn" value="" disabled="true" />
+            </td>
+            <td></td>
+            <td><div id="winner"></div></td>
+            <td></td>
+            <td>
+                <input type="button" id="btnNew" value="New game" />
+            </td>
+        </tr>
+    </table>
+</div>
+
+<footer>
+    <small>&copy; 2016 Olli Mäkinen</small>
+</footer>
+
+<script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.12.3.min.js"></script>
+<script src="script.js"></script>
+
+</body>
+
+</html>
