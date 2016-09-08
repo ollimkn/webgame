@@ -13,6 +13,7 @@ var BOF = {
 };
 
 $(function () {
+    // Initialize some game data
     $(".blackball").attr("draggable", "true");
     $(".whiteball").attr("draggable", "false");
     $("#gameboard td").addClass("gamesquare");
@@ -20,6 +21,7 @@ $(function () {
     $("#winner").hide();
     $("#btnNew").click(function () { ResetBoard(); });
 
+    // Handle player move
     $("#gameboard td").on("drop", function(ev) {
         ev.originalEvent.preventDefault();
         var data = ev.originalEvent.dataTransfer.getData("text");
@@ -29,6 +31,8 @@ $(function () {
 
         console.log(data);
         PrintBoard();
+
+        // Mark the previous location empty
         for (var i = 0; i < 3; i++) {
             for (var j = 0; j < 3; j++) {
                 if (BOF.board[i][j] === data) {
@@ -36,31 +40,40 @@ $(function () {
                 }
             }
         }
+        // Mark the new location
         BOF.board[$("#"+data).parent().attr("data-row")][$("#"+data).parent().attr("data-col")] = data;
+
         PrintBoard();
 
+        // Increment moves
         $("#txtRound").attr("value", ++BOF.moves);
 
-        if (WinCheck(BOF.toPlay)) {
+        // Check for a win
+        if (IsWinner(BOF.toPlay)) {
             $("#winner").text(BOF.toPlay.toUpperCase() + " wins!");
             $("#winner").show();
             return;
         }
 
+        // Game continues, update turn
         UpdateTurn();
 
         if (BOF.players == 1) {
+            // One player game, computer's turn
             ChooseMove();
+            // Increment moves and check for a win
             $("#txtRound").attr("value", ++BOF.moves);
-            if (WinCheck(BOF.toPlay)) {
+            if (IsWinner(BOF.toPlay)) {
                 $("#winner").text(BOF.toPlay.toUpperCase() + " wins!");
                 $("#winner").show();
                 return;
             }
+            // Game continues, update turn
             UpdateTurn();
         }
     });
 
+    // Handle dragover, see if the square is valid and empty
     $("#gameboard td").on("dragover", function (ev) {
         if (ev.originalEvent.target.classList.contains("gamesquare")) {
             if (IsFree(ev.originalEvent.target)) {
@@ -70,16 +83,23 @@ $(function () {
         }
     });
 
+    // Handle dragleave
     $("#gameboard td").on("dragleave", function (ev) {
         ev.originalEvent.target.classList.remove("dragsquare");
     });
 
+    // Handle dragstart
     $(".blackball, .whiteball").on("dragstart", function (ev) {
         ev.originalEvent.dataTransfer.setData("text", ev.originalEvent.target.id);
     });
 
 });
 
+//---------------------------------------------------------------------------------
+// function UpdateTurn
+// Updates some states when turn changes.
+// returns nothing
+//---------------------------------------------------------------------------------
 function UpdateTurn() {
     $(".blackball").attr("draggable", "false");
     $(".whiteball").attr("draggable", "false");
@@ -94,10 +114,20 @@ function UpdateTurn() {
     $("#btnTurn").toggleClass("turnWhite");
 }
 
+//---------------------------------------------------------------------------------
+// function ResetBoard
+// Resets the game.
+// returns nothing
+//---------------------------------------------------------------------------------
 function ResetBoard() {
     window.location.reload(true);
 }
 
+//---------------------------------------------------------------------------------
+// function PrintBoard
+// Debug function, prints the game board.
+// returns nothing
+//---------------------------------------------------------------------------------
 function PrintBoard() {
     var row = "";
     for (var i = 0; i < 3; i++) {
@@ -107,8 +137,14 @@ function PrintBoard() {
         console.log(row);
         row = "";
     }
+    console.log("\n");
 }
 
+//---------------------------------------------------------------------------------
+// function IsFree
+// Checks whether a given square (or row, column position) is available.
+// returns true or false
+//---------------------------------------------------------------------------------
 function IsFree(square, r, c) {
     if (square === -1) {
         return (BOF.board[r][c] === ".");
@@ -117,33 +153,43 @@ function IsFree(square, r, c) {
     return (BOF.board[square.dataset.row][square.dataset.col] === ".");
 }
 
-function WinCheck(player) {
+//---------------------------------------------------------------------------------
+// function IsWinner
+// Checks whether a player has won the game.
+// returns true or false
+//---------------------------------------------------------------------------------
+function IsWinner(player) {
     if (BOF.moves < 5) {
-        return 0;
+        return false;
     }
     var b1 = GetRowCol( player === "black" ? "bb1" : "wb1" );
     var b2 = GetRowCol( player === "black" ? "bb2" : "wb2" );
     var b3 = GetRowCol( player === "black" ? "bb3" : "wb3" );
 
     if (b1[0] === b2[0] && b1[0] === b3[0]) {
-        return 1; // Same row
+        return true; // Same row
     }
     if (b1[1] === b2[1] && b1[1] === b3[1]) {
-        return 1; // Same column
+        return true; // Same column
     }
     if (IsInArray([0, 0], [b1, b2, b3]) &&
         IsInArray([1, 1], [b1, b2, b3]) &&
         IsInArray([2, 2], [b1, b2, b3])) {
-        return 1; // Diagonal 1
+        return true; // Diagonal 1
     }
     if (IsInArray([0, 2], [b1, b2, b3]) &&
         IsInArray([1, 1], [b1, b2, b3]) &&
         IsInArray([2, 0], [b1, b2, b3])) {
-        return 1; // Diagonal 2
+        return true; // Diagonal 2
     }
-    return 0;
+    return false;
 }
 
+//---------------------------------------------------------------------------------
+// function GetRowCol
+// Finds the row and column of a given ball.
+// returns array [row, col] or [-1, -1] if not in play yet
+//---------------------------------------------------------------------------------
 function GetRowCol(ballId) {
     for (var i = 0; i < 3; i++) {
         for (var j = 0; j < 3; j++) {
@@ -155,6 +201,11 @@ function GetRowCol(ballId) {
     return [-1, -1]; // Ball not in play yet
 }
 
+//---------------------------------------------------------------------------------
+// function IsInArray
+// Checks whether a given location [row, col] is found in an array of locations.
+// returns true or false
+//---------------------------------------------------------------------------------
 function IsInArray(loc, locarr) {
     for (var i = 0; i < 3; i++) {
         if (locarr[i][0] === loc[0] && locarr[i][1] === loc[1]) {
@@ -164,6 +215,11 @@ function IsInArray(loc, locarr) {
     return false;   // Not found
 }
 
+//---------------------------------------------------------------------------------
+// function ChooseMove
+// Picks a move for the computer in a one player game.
+// returns nothing
+//---------------------------------------------------------------------------------
 function ChooseMove() {
     var b1 = GetRowCol(BOF.toPlay === "black" ? "bb1" : "wb1");
     var b2 = GetRowCol(BOF.toPlay === "black" ? "bb2" : "wb2");
@@ -174,8 +230,10 @@ function ChooseMove() {
 
     console.log("ChooseMove");
 
+    // Enough moves for a possibility to win
     if (BOF.moves >= 5) {
         console.log(".logic");
+        // Two on the same row (pt 1)
         if ((b1[0] === b2[0] || b1[0] === b3[0]) && (IsFree(-1, b1[0], 0) || IsFree(-1, b1[0], 1) || IsFree(-1, b1[0], 2))) {
             console.log("..1");
             if (b1[0] === b2[0]) {
@@ -200,7 +258,9 @@ function ChooseMove() {
                 // Move to b1[0], 2
                 newLocation = [b1[0], 2];
             }
-        } else if (b2[0] === b3[0] && (IsFree(-1, b2[0], 0) || IsFree(-1, b2[0], 1) || IsFree(-1, b2[0], 2))) {
+        }
+        // Two on the same row (pt 2)
+        else if (b2[0] === b3[0] && (IsFree(-1, b2[0], 0) || IsFree(-1, b2[0], 1) || IsFree(-1, b2[0], 2))) {
             console.log("..2");
             ballToMove += "b1"; // Move b1
             oldLocation = [b1[0], b1[1]];
@@ -216,7 +276,9 @@ function ChooseMove() {
                 // Move to b2[0], 2
                 newLocation = [b2[0], 2];
             }
-        } else if ((b1[1] === b2[1] || b1[1] === b3[1]) && (IsFree(-1, 0, b1[1]) || IsFree(-1, 1, b1[1]) || IsFree(-1, 2, b1[1]))) {
+        }
+        // Two in the same column (pt 1)
+        else if ((b1[1] === b2[1] || b1[1] === b3[1]) && (IsFree(-1, 0, b1[1]) || IsFree(-1, 1, b1[1]) || IsFree(-1, 2, b1[1]))) {
             console.log("..3");
             if (b1[1] === b2[1]) {
                 ballToMove += "b3"; // Move b3
@@ -238,7 +300,9 @@ function ChooseMove() {
                 // Move to 2, b1[1]
                 newLocation = [2, b1[1]];
             }
-        } else if (b2[1] === b3[1] && (IsFree(-1, 0, b2[1]) || IsFree(-1, 1, b2[1]) || IsFree(-1, 2, b2[1]))) {
+        }
+        // Two in the same column (pt 2)
+        else if (b2[1] === b3[1] && (IsFree(-1, 0, b2[1]) || IsFree(-1, 1, b2[1]) || IsFree(-1, 2, b2[1]))) {
             console.log("..4");
             ballToMove += "b1"; // Move b1
             oldLocation = [b1[0], b1[1]];
@@ -254,7 +318,9 @@ function ChooseMove() {
                 // Move to 2, b2[1]
                 newLocation = [2, b2[1]];
             }
-        } else if (IsInArray([0, 0], [b1, b2, b3]) && IsInArray([1, 1], [b1, b2, b3]) && IsFree(-1, 2, 2)) {
+        }
+        // Two in the same diagonal
+        else if (IsInArray([0, 0], [b1, b2, b3]) && IsInArray([1, 1], [b1, b2, b3]) && IsFree(-1, 2, 2)) {
             console.log("..5");
             newLocation = [2, 2];
             ballToMove += (b1 == [0, 0] ? (b2 == [1, 1] ? "b3" : "b2") : (b1 == [1, 1] ? (b2 == [0, 0] ? "b3" : "b2") : "b1"));
@@ -286,9 +352,11 @@ function ChooseMove() {
             oldLocation = GetRowCol(ballToMove);
         }
     }
+
+    // Not enough moves yet or no winning move found
     if (newLocation[0] == -1) {
         console.log(".random");
-        // TODO: better logic; for now just random
+        // TODO: better logic (stop opponent's winning moves if possible); for now just random
         if (BOF.moves == 1) {
             ballToMove += "b1";
         } else if (BOF.moves == 3) {
