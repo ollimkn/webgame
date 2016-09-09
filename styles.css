@@ -91,9 +91,10 @@ label {
 }
 
 #controls td {
-    width: 85px;
+    width: 125px;
     height: 45px;
     text-align: center;
+    vertical-align: bottom;
 }
 
 #winner {
@@ -111,7 +112,7 @@ label {
 
 #txtRound {
     width: 30px;
-    height: 20px;
+    height: 16px;
     background-color: burlywood;
     text-align: center;
 }
@@ -127,6 +128,10 @@ label {
     background-color: beige !important;
 }
 
+.winnerbg {
+    background-color: coral !important;
+}
+
 #btnNew {
     width: 90px;
     height: 40px;
@@ -135,7 +140,5 @@ label {
 }
 
 #btnNew:hover {
-    color: navy;
-    font-weight: bold;
-    width: 95px;
+    background-color: darkcyan;
 }
