@@ -14,6 +14,7 @@
     </hgroup>
 </header>
 
+<div id="winbox"></div>
 <div id="game" class="flex-container">
     <div id="blackside" class="flex-item-side">
         <table id="blackpieces">
@@ -41,19 +42,22 @@
     <table id="ctrlTable">
         <tr>
             <td>
-                <label for="txtRound">Round: </label>
+                <label for="txtRound">Round </label>
                 <input type="text" id="txtRound" disabled="true" />
             </td>
             <td>
-                <label for="btnTurn">To play: </label>
+                <label for="btnTurn">Turn </label>
                 <input type="button" id="btnTurn" value="" disabled="true" />
             </td>
             <td>
-                <label for="cbPlayers">Two players: </label>
+                <label for="cbPlayers">Two players </label>
                 <input type="checkbox" name="cbPlayers" id="cbPlayers" />
             </td>
             <td>
                 <input type="button" id="btnNew" value="New game" />
+            </td>
+            <td>
+                <input type="button" id="btnStats" value="Stats" />
             </td>
         </tr>
     </table>

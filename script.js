@@ -19,6 +19,7 @@ $(function () {
     $("#txtRound").attr("value", "0");
     $("#winner").hide();
     $("#btnNew").click(function () { ResetBoard(); });
+    $("#btnStats").click(function () { ShowStats(); });
 
     // Handle player move
     $("#gameboard td").on("drop", function(ev) {
@@ -29,11 +30,7 @@ $(function () {
         ev.originalEvent.target.classList.remove("dragsquare");
 
         BOF.players = ($("#cbPlayers").prop("checked") == true ? 2 : 1);
-        console.log("Players: " + BOF.players);
         $("#cbPlayers").attr("disabled", "true");
-
-        console.log(data);
-        PrintBoard();
 
         // Mark the previous location empty
         for (var i = 0; i < 3; i++) {
@@ -46,8 +43,6 @@ $(function () {
         // Mark the new location
         BOF.board[$("#"+data).parent().attr("data-row")][$("#"+data).parent().attr("data-col")] = data;
 
-        PrintBoard();
-
         // Increment moves
         $("#txtRound").attr("value", ++BOF.moves);
 
@@ -55,6 +50,7 @@ $(function () {
         if (IsWinner(BOF.toPlay)) {
             BOF.won = true;
             SetNoDrag();
+            AddNewStat();
             return;
         }
 
@@ -63,16 +59,18 @@ $(function () {
 
         if (BOF.players == 1) {
             // One player game, computer's turn
-            ChooseMove();
-            // Increment moves and check for a win
-            $("#txtRound").attr("value", ++BOF.moves);
-            if (IsWinner(BOF.toPlay)) {
-                BOF.won = true;
-                SetNoDrag();
-                return;
-            }
-            // Game continues, update turn
-            UpdateTurn();
+            ChooseMove().done( function() {
+                // Increment moves and check for a win
+                $("#txtRound").attr("value", ++BOF.moves);
+                if (IsWinner(BOF.toPlay)) {
+                    BOF.won = true;
+                    SetNoDrag();
+                    AddNewStat();
+                    return;
+                }
+                // Game continues, update turn
+                UpdateTurn();
+            });
         }
     });
 
@@ -138,6 +136,40 @@ function ResetBoard() {
 }
 
 //---------------------------------------------------------------------------------
+// function ShowStats
+// Retrieves and shows game statistics.
+// returns nothing
+//---------------------------------------------------------------------------------
+function ShowStats() {
+    $.ajax({
+        type: "GET",
+        url: "stats.php?cmd=stats",
+        dataType: "json",
+        success: function (data) {
+            alert("Total games played: " + data.total + "\n" +
+                "Won by Black: " + data.black + "\n" +
+                "Won by White: " + data.white + "\n");
+        }
+    });
+}
+
+//---------------------------------------------------------------------------------
+// function AddNewStat
+// Updates a new game statistic in the database.
+// returns nothing
+//---------------------------------------------------------------------------------
+function AddNewStat() {
+    $.ajax({
+        type: "GET",
+        url: "stats.php?cmd=" + BOF.toPlay,
+        dataType: "html",
+        success: function (response) {
+            // No action
+        }
+    });
+}
+
+//---------------------------------------------------------------------------------
 // function PrintBoard
 // Debug function, prints the game board.
 // returns nothing
@@ -163,7 +195,6 @@ function IsFree(square, r, c) {
     if (square === -1) {
         return (BOF.board[r][c] === ".");
     }
-    console.log(square.dataset.row + ", " + square.dataset.col);
     return (BOF.board[square.dataset.row][square.dataset.col] === ".");
 }
 
@@ -212,6 +243,16 @@ function SetWinner(b1, b2, b3) {
     $(".gamesquare[data-row='" + b1[0] + "'][data-col='" + b1[1] + "']").addClass("winnerbg");
     $(".gamesquare[data-row='" + b2[0] + "'][data-col='" + b2[1] + "']").addClass("winnerbg");
     $(".gamesquare[data-row='" + b3[0] + "'][data-col='" + b3[1] + "']").addClass("winnerbg");
+
+    /*
+    $("#winbox").animate({
+        width: "+=200px",
+        height: "+=100px",
+        top: "+=400px",
+        left: "+=200px" },
+        1000,
+        "swing");
+        */
 }
 
 //---------------------------------------------------------------------------------
@@ -251,8 +292,8 @@ function IsInArray(loc, locarr) {
 //---------------------------------------------------------------------------------
 function ChooseMove() {
     var w1 = GetRowCol("wb1");
-    var w2 = GetRowCol("wb1");
-    var w3 = GetRowCol("wb1");
+    var w2 = GetRowCol("wb2");
+    var w3 = GetRowCol("wb3");
     var b1 = GetRowCol("bb1");
     var b2 = GetRowCol("bb2");
     var b3 = GetRowCol("bb3");
@@ -291,7 +332,7 @@ function ChooseMove() {
                     newLocation = [w1[0], 2];
                 }
             }
-                // Two on the same row (pt 2)
+            // Two on the same row (pt 2)
             else if (w2[0] === w3[0] && (IsFree(-1, w2[0], 0) || IsFree(-1, w2[0], 1) || IsFree(-1, w2[0], 2))) {
                 console.log("..2");
                 ballToMove = "wb1"; // Move wb1
@@ -309,7 +350,7 @@ function ChooseMove() {
                     newLocation = [w2[0], 2];
                 }
             }
-                // Two in the same column (pt 1)
+            // Two in the same column (pt 1)
             else if ((w1[1] === w2[1] || w1[1] === w3[1]) && (IsFree(-1, 0, w1[1]) || IsFree(-1, 1, w1[1]) || IsFree(-1, 2, w1[1]))) {
                 console.log("..3");
                 if (w1[1] === w2[1]) {
@@ -333,7 +374,7 @@ function ChooseMove() {
                     newLocation = [2, w1[1]];
                 }
             }
-                // Two in the same column (pt 2)
+            // Two in the same column (pt 2)
             else if (w2[1] === w3[1] && (IsFree(-1, 0, w2[1]) || IsFree(-1, 1, w2[1]) || IsFree(-1, 2, w2[1]))) {
                 console.log("..4");
                 ballToMove = "wb1"; // Move wb1
@@ -355,32 +396,32 @@ function ChooseMove() {
             else if (IsInArray([0, 0], [w1, w2, w3]) && IsInArray([1, 1], [w1, w2, w3]) && IsFree(-1, 2, 2)) {
                 console.log("..5");
                 newLocation = [2, 2];
-                ballToMove = (w1 == [0, 0] ? (w2 == [1, 1] ? "wb3" : "wb2") : (w1 == [1, 1] ? (w2 == [0, 0] ? "wb3" : "wb2") : "wb1"));
+                ballToMove = (w1.equals([0, 0]) ? (w2.equals([1, 1]) ? "wb3" : "wb2") : (w1.equals([1, 1]) ? (w2.equals([0, 0]) ? "wb3" : "wb2") : "wb1"));
                 oldLocation = GetRowCol(ballToMove);
             } else if (IsInArray([0, 0], [w1, w2, w3]) && IsInArray([2, 2], [w1, w2, w3]) && IsFree(-1, 1, 1)) {
                 console.log("..6");
                 newLocation = [1, 1];
-                ballToMove = (w1 == [0, 0] ? (w2 == [2, 2] ? "wb3" : "wb2") : (w1 == [2, 2] ? (w2 == [0, 0] ? "wb3" : "wb2") : "wb1"));
+                ballToMove = (w1.equals([0, 0]) ? (w2.equals([2, 2]) ? "wb3" : "wb2") : (w1.equals([2, 2]) ? (w2.equals([0, 0]) ? "wb3" : "wb2") : "wb1"));
                 oldLocation = GetRowCol(ballToMove);
             } else if (IsInArray([1, 1], [w1, w2, w3]) && IsInArray([2, 2], [w1, w2, w3]) && IsFree(-1, 0, 0)) {
                 console.log("..7");
                 newLocation = [0, 0];
-                ballToMove = (w1 == [1, 1] ? (w2 == [2, 2] ? "wb3" : "wb2") : (w1 == [2, 2] ? (w2 == [1, 1] ? "wb3" : "wb2") : "wb1"));
+                ballToMove = (w1.equals([1, 1]) ? (w2.equals([2, 2]) ? "wb3" : "wb2") : (w1.equals([2, 2]) ? (w2.equals([1, 1]) ? "wb3" : "wb2") : "wb1"));
                 oldLocation = GetRowCol(ballToMove);
             } else if (IsInArray([0, 2], [w1, w2, w3]) && IsInArray([1, 1], [w1, w2, w3]) && IsFree(-1, 2, 0)) {
                 console.log("..8");
                 newLocation = [2, 0];
-                ballToMove = (w1 == [0, 2] ? (w2 == [1, 1] ? "wb3" : "wb2") : (w1 == [1, 1] ? (w2 == [0, 2] ? "wb3" : "wb2") : "wb1"));
+                ballToMove = (w1.equals([0, 2]) ? (w2.equals([1, 1]) ? "wb3" : "wb2") : (w1.equals([1, 1]) ? (w2.equals([0, 2]) ? "wb3" : "wb2") : "wb1"));
                 oldLocation = GetRowCol(ballToMove);
             } else if (IsInArray([0, 2], [w1, w2, w3]) && IsInArray([2, 0], [w1, w2, w3]) && IsFree(-1, 1, 1)) {
                 console.log("..9");
                 newLocation = [1, 1];
-                ballToMove = (w1 == [0, 2] ? (w2 == [2, 0] ? "wb3" : "wb2") : (w1 == [2, 0] ? (w2 == [0, 2] ? "wb3" : "wb2") : "wb1"));
+                ballToMove = (w1.equals([0, 2]) ? (w2.equals([2, 0]) ? "wb3" : "wb2") : (w1.equals([2, 0]) ? (w2.equals([0, 2]) ? "wb3" : "wb2") : "wb1"));
                 oldLocation = GetRowCol(ballToMove);
             } else if (IsInArray([2, 0], [w1, w2, w3]) && IsInArray([1, 1], [w1, w2, w3]) && IsFree(-1, 0, 2)) {
                 console.log("..10");
                 newLocation = [0, 2];
-                ballToMove = (w1 == [2, 0] ? (w2 == [1, 1] ? "wb3" : "wb2") : (w1 == [1, 1] ? (w2 == [2, 0] ? "wb3" : "wb2") : "wb1"));
+                ballToMove = (w1.equals([2, 0]) ? (w2.equals([1, 1]) ? "wb3" : "wb2") : (w1.equals([1, 1]) ? (w2.equals([2, 0]) ? "wb3" : "wb2") : "wb1"));
                 oldLocation = GetRowCol(ballToMove);
             }
         } // Moves >= 5
@@ -421,6 +462,38 @@ function ChooseMove() {
     if (BOF.moves > 6) {
         BOF.board[oldLocation[0]][oldLocation[1]] = ".";
     }
-    $("#" + ballToMove).appendTo(".gamesquare[data-row='" + newLocation[0] + "'][data-col='" + newLocation[1] + "']");
     BOF.board[newLocation[0]][newLocation[1]] = ballToMove;
+
+    $("#" + ballToMove).animate({
+        opacity: '0.2'
+    }, 500, "linear", function () {
+        $("#" + ballToMove).appendTo(".gamesquare[data-row='" + newLocation[0] + "'][data-col='" + newLocation[1] + "']");
+    });
+
+    return $("#" + ballToMove).animate({
+        opacity: '1'
+    }, 500, "linear").promise();
+
+}
+
+//---------------------------------------------------------------------------------
+// Array.prototype.equals
+// A method for comparing arrays for equality
+// returns true or false
+//---------------------------------------------------------------------------------
+Array.prototype.equals = function (arr) {
+    // Sanity checks
+    if (!arr) {
+        return false;
+    }
+    if (this.length != arr.length) {
+        return false;
+    }
+    // Actual comparison
+    for (var i = 0, len = this.length; i < len; i++) {
+        if (this[i] != arr[i]) {
+            return false; // If even one item is different, no need to continue
+        }
+    }
+    return true;
 }

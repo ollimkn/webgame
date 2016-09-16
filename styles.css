@@ -67,6 +67,14 @@ label {
     vertical-align: middle;
 }
 
+#winbox {
+    width: 0px;
+    height: 0px;
+    top: 0px;
+    left: 0px;
+    background-color: gold;
+}
+
 #game td {
     width: 90px;
     height: 90px;
@@ -80,6 +88,10 @@ label {
 
 #game img {
     cursor: move;
+    position: relative;
+    display: block;
+    height: 90px;
+    width: 90px;
 }
 
 #controls {
@@ -91,7 +103,7 @@ label {
 }
 
 #controls td {
-    width: 125px;
+    width: 100px;
     height: 45px;
     text-align: center;
     vertical-align: bottom;
@@ -132,7 +144,7 @@ label {
     background-color: coral !important;
 }
 
-#btnNew {
+#btnNew, #btnStats {
     width: 90px;
     height: 40px;
     background-color: cadetblue;
