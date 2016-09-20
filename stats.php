@@ -1,27 +1,29 @@
 ﻿<?php
-$cmd = $_REQUEST["cmd"];
+$col = $_REQUEST["col"];
+$plr = $_REQUEST["plr"];
 
-$con = mysqli_connect('localhost','ollimkn','cotw11','webgame_stats');
+$con = mysqli_connect("localhost", "ollimkn", "cotw11", "webgame_stats");
 if (!$con) {
-    die('Could not connect: ' . mysqli_error($con));
+    die("Could not connect: " . $con->connect_error);
 }
 
-if ($cmd == "stats") {
-	$sql = "SELECT id FROM stats";
-	$result = $con->query($sql);
+if ($col == "stats") {
+	$result = $con->query("SELECT id FROM stats");
 	$total = $result->num_rows;
-	$sql = "SELECT id FROM stats WHERE wonby = 'black'";
-	$result = $con->query($sql);
+	$result = $con->query("SELECT id FROM stats WHERE wonby = \"black\"");
 	$totalblack = $result->num_rows;
 	$totalwhite = $total - $totalblack;
-	echo "{ total: " . $total . ", black: " . $totalblack . ", white: " . $totalwhite . " }";
-} elseif ($cmd == "black" || $cmd == "white") {
-	$sql = "INSERT INTO stats (time, wonby) VALUES ('" . $cmd . "', '" . getdate() . "')";
-	$con->query($sql);
+	echo "{ \"total\": " . $total . ", \"black\": " . $totalblack . ", \"white\": " . $totalwhite . " }";
+} elseif ($col == "black" || $col == "white") {
+	if ($con->query("INSERT INTO stats (wonby, players) VALUES (\"" . $col . "\", \"" . $plr . "\")") === TRUE) {
+		echo "New record created successfully";
+	} else {
+		echo "Error: " . $con->error;
+	}
 } else {
 	// Unknown command, no action
 }
 
-$conn->close();
+$con->close();
 
 ?>

@@ -141,16 +141,23 @@ function ResetBoard() {
 // returns nothing
 //---------------------------------------------------------------------------------
 function ShowStats() {
+    console.log("ShowStats >");
     $.ajax({
         type: "GET",
-        url: "stats.php?cmd=stats",
-        dataType: "json",
+        url: "stats.php?col=stats&plr=0",
+        dataType: "html",
+        error: function (req, status, err) {
+            console.log("ShowStats error: "+ err + ": " + status);
+        },
         success: function (data) {
-            alert("Total games played: " + data.total + "\n" +
-                "Won by Black: " + data.black + "\n" +
-                "Won by White: " + data.white + "\n");
+            console.log("ShowStats success: " + data);
+            jdata = JSON.parse(data);
+            alert("Total games played: " + jdata.total + "\n" +
+                "Won by Black: " + jdata.black + "\n" +
+                "Won by White: " + jdata.white + "\n");
         }
     });
+    console.log("ShowStats <");
 }
 
 //---------------------------------------------------------------------------------
@@ -159,14 +166,20 @@ function ShowStats() {
 // returns nothing
 //---------------------------------------------------------------------------------
 function AddNewStat() {
+    console.log("AddNewStat >");
     $.ajax({
         type: "GET",
-        url: "stats.php?cmd=" + BOF.toPlay,
+        url: "stats.php?col=" + BOF.toPlay + "&plr=" + BOF.players,
         dataType: "html",
+        error: function (req, status, err) {
+            console.log("AddNewStat error: "+ err + ": " + status);
+        },
         success: function (response) {
             // No action
+            console.log("AddNewStat success: " + response);
         }
     });
+    console.log("AddNewStat <");
 }
 
 //---------------------------------------------------------------------------------
