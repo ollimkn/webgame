@@ -141,23 +141,20 @@ function ResetBoard() {
 // returns nothing
 //---------------------------------------------------------------------------------
 function ShowStats() {
-    console.log("ShowStats >");
     $.ajax({
         type: "GET",
         url: "stats.php?col=stats&plr=0",
         dataType: "html",
         error: function (req, status, err) {
-            console.log("ShowStats error: "+ err + ": " + status);
+            // console.log("ShowStats error: "+ err + ": " + status);
         },
         success: function (data) {
-            console.log("ShowStats success: " + data);
             jdata = JSON.parse(data);
             alert("Total games played: " + jdata.total + "\n" +
                 "Won by Black: " + jdata.black + "\n" +
                 "Won by White: " + jdata.white + "\n");
         }
     });
-    console.log("ShowStats <");
 }
 
 //---------------------------------------------------------------------------------
@@ -166,20 +163,17 @@ function ShowStats() {
 // returns nothing
 //---------------------------------------------------------------------------------
 function AddNewStat() {
-    console.log("AddNewStat >");
     $.ajax({
         type: "GET",
         url: "stats.php?col=" + BOF.toPlay + "&plr=" + BOF.players,
         dataType: "html",
         error: function (req, status, err) {
-            console.log("AddNewStat error: "+ err + ": " + status);
+            // console.log("AddNewStat error: "+ err + ": " + status);
         },
         success: function (response) {
             // No action
-            console.log("AddNewStat success: " + response);
         }
     });
-    console.log("AddNewStat <");
 }
 
 //---------------------------------------------------------------------------------
@@ -256,16 +250,6 @@ function SetWinner(b1, b2, b3) {
     $(".gamesquare[data-row='" + b1[0] + "'][data-col='" + b1[1] + "']").addClass("winnerbg");
     $(".gamesquare[data-row='" + b2[0] + "'][data-col='" + b2[1] + "']").addClass("winnerbg");
     $(".gamesquare[data-row='" + b3[0] + "'][data-col='" + b3[1] + "']").addClass("winnerbg");
-
-    /*
-    $("#winbox").animate({
-        width: "+=200px",
-        height: "+=100px",
-        top: "+=400px",
-        left: "+=200px" },
-        1000,
-        "swing");
-        */
 }
 
 //---------------------------------------------------------------------------------
@@ -479,13 +463,13 @@ function ChooseMove() {
 
     $("#" + ballToMove).animate({
         opacity: '0.2'
-    }, 500, "linear", function () {
+    }, 400, "linear", function () {
         $("#" + ballToMove).appendTo(".gamesquare[data-row='" + newLocation[0] + "'][data-col='" + newLocation[1] + "']");
     });
 
     return $("#" + ballToMove).animate({
         opacity: '1'
-    }, 500, "linear").promise();
+    }, 400, "linear").promise();
 
 }
 
