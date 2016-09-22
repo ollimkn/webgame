@@ -12,14 +12,23 @@ var BOF = {
 };
 
 $(function () {
+    // jQuery UI initializations
+    $("#controlgroup").controlgroup();
+    $("#statisticsDialog").dialog({
+        autoOpen: false,
+        width: 375,
+        buttons: [{
+            text: "Ok",
+            click: function () { $(this).dialog("close"); }
+        }]
+    });
+
     // Initialize some game data
     $(".blackball").attr("draggable", "true");
     $(".whiteball").attr("draggable", "false");
     $("#gameboard td").addClass("gamesquare");
-    $("#txtRound").attr("value", "0");
-    $("#winner").hide();
     $("#btnNew").click(function () { ResetBoard(); });
-    $("#btnStats").click(function () { ShowStats(); });
+    $("#btnStats").click(function (event) { ShowStats(event); });
 
     // Handle player move
     $("#gameboard td").on("drop", function(ev) {
@@ -29,8 +38,9 @@ $(function () {
         ev.originalEvent.target.appendChild(ball);
         ev.originalEvent.target.classList.remove("dragsquare");
 
-        BOF.players = ($("#cbPlayers").prop("checked") == true ? 2 : 1);
-        $("#cbPlayers").attr("disabled", "true");
+        BOF.players = ($("#onePlayer").prop("checked") ? 1 : 2);
+        $("#onePlayer").prop("disabled", true);
+        $("#twoPlayers").prop("disabled", true);
 
         // Mark the previous location empty
         for (var i = 0; i < 3; i++) {
@@ -44,7 +54,7 @@ $(function () {
         BOF.board[$("#"+data).parent().attr("data-row")][$("#"+data).parent().attr("data-col")] = data;
 
         // Increment moves
-        $("#txtRound").attr("value", ++BOF.moves);
+        BOF.moves++;
 
         // Check for a win
         if (IsWinner(BOF.toPlay)) {
@@ -57,11 +67,11 @@ $(function () {
         // Game continues, update turn
         UpdateTurn();
 
-        if (BOF.players == 1) {
+        if (BOF.players === 1) {
             // One player game, computer's turn
             ChooseMove().done( function() {
                 // Increment moves and check for a win
-                $("#txtRound").attr("value", ++BOF.moves);
+                BOF.moves++;
                 if (IsWinner(BOF.toPlay)) {
                     BOF.won = true;
                     SetNoDrag();
@@ -113,7 +123,7 @@ function UpdateTurn() {
             $(".blackball").attr("draggable", "true");
         }
     }
-    $("#btnTurn").toggleClass("turnWhite");
+    $("#infoText").html("<strong>Moves: </strong>" + BOF.moves + ", <strong>To move: </strong>" + BOF.toPlay);
 }
 
 //---------------------------------------------------------------------------------
@@ -140,7 +150,7 @@ function ResetBoard() {
 // Retrieves and shows game statistics.
 // returns nothing
 //---------------------------------------------------------------------------------
-function ShowStats() {
+function ShowStats(event) {
     $.ajax({
         type: "GET",
         url: "stats.php?col=stats&plr=0",
@@ -150,9 +160,11 @@ function ShowStats() {
         },
         success: function (data) {
             jdata = JSON.parse(data);
-            alert("Total games played: " + jdata.total + "\n" +
-                "Won by Black: " + jdata.black + "\n" +
-                "Won by White: " + jdata.white + "\n");
+            $("#statsTotal").html(jdata.total);
+            $("#statsBlack").html(jdata.black);
+            $("#statsWhite").html(jdata.white);
+            $("#statisticsDialog").dialog("open");
+            event.preventDefault();
         }
     });
 }
@@ -250,6 +262,7 @@ function SetWinner(b1, b2, b3) {
     $(".gamesquare[data-row='" + b1[0] + "'][data-col='" + b1[1] + "']").addClass("winnerbg");
     $(".gamesquare[data-row='" + b2[0] + "'][data-col='" + b2[1] + "']").addClass("winnerbg");
     $(".gamesquare[data-row='" + b3[0] + "'][data-col='" + b3[1] + "']").addClass("winnerbg");
+    $("#infoText").html("<strong>Winner is " + BOF.toPlay + "!</strong>");
 }
 
 //---------------------------------------------------------------------------------
@@ -298,14 +311,10 @@ function ChooseMove() {
     var oldLocation;
     var newLocation = [-1, -1];
 
-    console.log("ChooseMove");
-
-    if (BOF.moves >= 3) { // Enough moves for the opponent to win with next move
+    if (BOF.moves >= 3) { // Enough moves for the opponent to win with next move, may have to block
         if (BOF.moves >= 5) { // Enough moves for a possibility to win: logic to make a winning move
-            console.log(".logic");
             // Two on the same row (pt 1)
             if ((w1[0] === w2[0] || w1[0] === w3[0]) && (IsFree(-1, w1[0], 0) || IsFree(-1, w1[0], 1) || IsFree(-1, w1[0], 2))) {
-                console.log("..1");
                 if (w1[0] === w2[0]) {
                     // Move wb3
                     ballToMove = "wb3";
@@ -331,7 +340,6 @@ function ChooseMove() {
             }
             // Two on the same row (pt 2)
             else if (w2[0] === w3[0] && (IsFree(-1, w2[0], 0) || IsFree(-1, w2[0], 1) || IsFree(-1, w2[0], 2))) {
-                console.log("..2");
                 ballToMove = "wb1"; // Move wb1
                 oldLocation = [w1[0], w1[1]];
                 if (IsFree(-1, w2[0], 0)) {
@@ -349,7 +357,6 @@ function ChooseMove() {
             }
             // Two in the same column (pt 1)
             else if ((w1[1] === w2[1] || w1[1] === w3[1]) && (IsFree(-1, 0, w1[1]) || IsFree(-1, 1, w1[1]) || IsFree(-1, 2, w1[1]))) {
-                console.log("..3");
                 if (w1[1] === w2[1]) {
                     ballToMove = "wb3"; // Move wb3
                     oldLocation = [w3[0], w3[1]];
@@ -373,7 +380,6 @@ function ChooseMove() {
             }
             // Two in the same column (pt 2)
             else if (w2[1] === w3[1] && (IsFree(-1, 0, w2[1]) || IsFree(-1, 1, w2[1]) || IsFree(-1, 2, w2[1]))) {
-                console.log("..4");
                 ballToMove = "wb1"; // Move wb1
                 oldLocation = [w1[0], w1[1]];
                 if (IsFree(-1, 0, w2[1])) {
@@ -389,47 +395,126 @@ function ChooseMove() {
                     newLocation = [2, w2[1]];
                 }
             }
-                // Two in the same diagonal
+            // Two in the same diagonal
             else if (IsInArray([0, 0], [w1, w2, w3]) && IsInArray([1, 1], [w1, w2, w3]) && IsFree(-1, 2, 2)) {
-                console.log("..5");
                 newLocation = [2, 2];
                 ballToMove = (w1.equals([0, 0]) ? (w2.equals([1, 1]) ? "wb3" : "wb2") : (w1.equals([1, 1]) ? (w2.equals([0, 0]) ? "wb3" : "wb2") : "wb1"));
                 oldLocation = GetRowCol(ballToMove);
             } else if (IsInArray([0, 0], [w1, w2, w3]) && IsInArray([2, 2], [w1, w2, w3]) && IsFree(-1, 1, 1)) {
-                console.log("..6");
                 newLocation = [1, 1];
                 ballToMove = (w1.equals([0, 0]) ? (w2.equals([2, 2]) ? "wb3" : "wb2") : (w1.equals([2, 2]) ? (w2.equals([0, 0]) ? "wb3" : "wb2") : "wb1"));
                 oldLocation = GetRowCol(ballToMove);
             } else if (IsInArray([1, 1], [w1, w2, w3]) && IsInArray([2, 2], [w1, w2, w3]) && IsFree(-1, 0, 0)) {
-                console.log("..7");
                 newLocation = [0, 0];
                 ballToMove = (w1.equals([1, 1]) ? (w2.equals([2, 2]) ? "wb3" : "wb2") : (w1.equals([2, 2]) ? (w2.equals([1, 1]) ? "wb3" : "wb2") : "wb1"));
                 oldLocation = GetRowCol(ballToMove);
             } else if (IsInArray([0, 2], [w1, w2, w3]) && IsInArray([1, 1], [w1, w2, w3]) && IsFree(-1, 2, 0)) {
-                console.log("..8");
                 newLocation = [2, 0];
                 ballToMove = (w1.equals([0, 2]) ? (w2.equals([1, 1]) ? "wb3" : "wb2") : (w1.equals([1, 1]) ? (w2.equals([0, 2]) ? "wb3" : "wb2") : "wb1"));
                 oldLocation = GetRowCol(ballToMove);
             } else if (IsInArray([0, 2], [w1, w2, w3]) && IsInArray([2, 0], [w1, w2, w3]) && IsFree(-1, 1, 1)) {
-                console.log("..9");
                 newLocation = [1, 1];
                 ballToMove = (w1.equals([0, 2]) ? (w2.equals([2, 0]) ? "wb3" : "wb2") : (w1.equals([2, 0]) ? (w2.equals([0, 2]) ? "wb3" : "wb2") : "wb1"));
                 oldLocation = GetRowCol(ballToMove);
             } else if (IsInArray([2, 0], [w1, w2, w3]) && IsInArray([1, 1], [w1, w2, w3]) && IsFree(-1, 0, 2)) {
-                console.log("..10");
                 newLocation = [0, 2];
                 ballToMove = (w1.equals([2, 0]) ? (w2.equals([1, 1]) ? "wb3" : "wb2") : (w1.equals([1, 1]) ? (w2.equals([2, 0]) ? "wb3" : "wb2") : "wb1"));
                 oldLocation = GetRowCol(ballToMove);
             }
         } // Moves >= 5
 
-        // TODO: Logic to block opponent
+        if (newLocation.equals([-1, -1])) {
+            // No winning move was found; need to block?
+            if (BOF.moves === 3) {
+                ballToMove = "wb2";
+            } else if (BOF.moves === 5) {
+                ballToMove = "wb3";
+            } else {
+                // TODO: better logic for selecting
+                ballToMove = ("wb" + Math.floor((Math.random() * 3) + 1));
+            }
+            oldLocation = GetRowCol(ballToMove);
 
+            // Two on the same row (pt 1)
+            if ((b1[0] === b2[0] || b1[0] === b3[0]) && (IsFree(-1, b1[0], 0) || IsFree(-1, b1[0], 1) || IsFree(-1, b1[0], 2))) {
+                if (IsFree(-1, b1[0], 0)) {
+                    // Move to b1[0], 0
+                    newLocation = [b1[0], 0];
+                }
+                else if (IsFree(-1, b1[0], 1)) {
+                    // Move to b1[0], 1
+                    newLocation = [b1[0], 1];
+                }
+                else {
+                    // Move to b1[0], 2
+                    newLocation = [b1[0], 2];
+                }
+            }
+                // Two on the same row (pt 2)
+            else if (b2[0] === b3[0] && (IsFree(-1, b2[0], 0) || IsFree(-1, b2[0], 1) || IsFree(-1, b2[0], 2))) {
+                if (IsFree(-1, b2[0], 0)) {
+                    // Move to b2[0], 0
+                    newLocation = [b2[0], 0];
+                }
+                else if (IsFree(-1, b2[0], 1)) {
+                    // Move to b2[0], 1
+                    newLocation = [b2[0], 1];
+                }
+                else {
+                    // Move to b2[0], 2
+                    newLocation = [b2[0], 2];
+                }
+            }
+                // Two in the same column (pt 1)
+            else if ((b1[1] === b2[1] || b1[1] === b3[1]) && (IsFree(-1, 0, b1[1]) || IsFree(-1, 1, b1[1]) || IsFree(-1, 2, b1[1]))) {
+                if (IsFree(-1, 0, b1[1])) {
+                    // Move to 0, b1[1]
+                    newLocation = [0, b1[1]];
+                }
+                else if (IsFree(-1, 1, b1[1])) {
+                    // Move to 1, b1[1]
+                    newLocation = [1, b1[1]];
+                }
+                else {
+                    // Move to 2, b1[1]
+                    newLocation = [2, b1[1]];
+                }
+            }
+                // Two in the same column (pt 2)
+            else if (b2[1] === b3[1] && (IsFree(-1, 0, b2[1]) || IsFree(-1, 1, b2[1]) || IsFree(-1, 2, b2[1]))) {
+                if (IsFree(-1, 0, b2[1])) {
+                    // Move to 0, b2[1]
+                    newLocation = [0, b2[1]];
+                }
+                else if (IsFree(-1, 1, b2[1])) {
+                    // Move to 1, b2[1]
+                    newLocation = [1, b2[1]];
+                }
+                else {
+                    // Move to 2, b2[1]
+                    newLocation = [2, b2[1]];
+                }
+            }
+                // Two in the same diagonal
+            else if (IsInArray([0, 0], [b1, b2, b3]) && IsInArray([1, 1], [b1, b2, b3]) && IsFree(-1, 2, 2)) {
+                newLocation = [2, 2];
+            } else if (IsInArray([0, 0], [b1, b2, b3]) && IsInArray([2, 2], [b1, b2, b3]) && IsFree(-1, 1, 1)) {
+                newLocation = [1, 1];
+            } else if (IsInArray([1, 1], [b1, b2, b3]) && IsInArray([2, 2], [b1, b2, b3]) && IsFree(-1, 0, 0)) {
+                newLocation = [0, 0];
+            } else if (IsInArray([0, 2], [b1, b2, b3]) && IsInArray([1, 1], [b1, b2, b3]) && IsFree(-1, 2, 0)) {
+                newLocation = [2, 0];
+            } else if (IsInArray([0, 2], [b1, b2, b3]) && IsInArray([2, 0], [b1, b2, b3]) && IsFree(-1, 1, 1)) {
+                newLocation = [1, 1];
+            } else if (IsInArray([2, 0], [b1, b2, b3]) && IsInArray([1, 1], [b1, b2, b3]) && IsFree(-1, 0, 2)) {
+                newLocation = [0, 2];
+            }
+        }
     } // Moves >= 3
 
     // Not enough moves yet or no winning/blocking move found: move randomly
     // TODO: should have logic to not create an "opening"
-    if (newLocation[0] == -1) {
+    if (newLocation.equals([-1, -1])) {
         console.log(".random");
         if (BOF.moves == 1) {
             ballToMove = "wb1";

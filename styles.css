@@ -67,12 +67,32 @@ label {
     vertical-align: middle;
 }
 
-#winbox {
-    width: 0px;
-    height: 0px;
-    top: 0px;
-    left: 0px;
-    background-color: gold;
+#infoBox {
+    margin-top: 20px;
+    padding: 0 .7em;
+}
+
+#infoBoxIcon {
+    float: left;
+    margin-right: .3em;
+}
+
+#statisticsTable {
+    border: 1px solid black;
+}
+
+#statisticsTable th {
+    text-align: center;
+    border: 1px solid gray;
+    border-radius: 3px;
+    background-color: cornflowerblue;
+}
+
+#statisticsTable td {
+    text-align: center;
+    border: 1px solid gray;
+    border-radius: 3px;
+    background-color: lightblue;
 }
 
 #game td {
@@ -98,59 +118,10 @@ label {
     margin-left: auto;
     margin-right: auto;
     width: 510px;
-    height: 50px;
+    height: 150px;
     text-align: center;
-}
-
-#controls td {
-    width: 100px;
-    height: 45px;
-    text-align: center;
-    vertical-align: bottom;
-}
-
-#winner {
-    display: none;
-    column-span: 3;
-    width: 200px;
-    height: 35px;
-    font-size: 1.5em;
-    font-weight: 500;
-    background-color: cadetblue;
-    color: deeppink;
-    border: 2px solid black;
-    border-radius: 5px;
-}
-
-#txtRound {
-    width: 30px;
-    height: 16px;
-    background-color: burlywood;
-    text-align: center;
-}
-
-#btnTurn {
-    width: 24px;
-    height: 24px;
-    background-color: black;
-    border-radius: 12px;
-}
-
-.turnWhite {
-    background-color: beige !important;
 }
 
 .winnerbg {
     background-color: coral !important;
-}
-
-#btnNew, #btnStats {
-    width: 90px;
-    height: 40px;
-    background-color: cadetblue;
-    border-radius: 5px;
-}
-
-#btnNew:hover {
-    background-color: darkcyan;
 }

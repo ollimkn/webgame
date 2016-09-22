@@ -3,6 +3,7 @@
 <head>
     <title>Game of "Bof"</title>
 	<meta charset="utf-8" />
+    <link rel="stylesheet" href="jquery-ui-1.12.1/jquery-ui.min.css">
     <link rel="stylesheet" href="styles.css" />
 </head>
 
@@ -38,29 +39,41 @@
         </table>
     </div>
 </div>
+
 <div id="controls">
-    <table id="ctrlTable">
-        <tr>
-            <td>
-                <label for="txtRound">Round </label>
-                <input type="text" id="txtRound" disabled="true" />
-            </td>
-            <td>
-                <label for="btnTurn">Turn </label>
-                <input type="button" id="btnTurn" value="" disabled="true" />
-            </td>
-            <td>
-                <label for="cbPlayers">Two players </label>
-                <input type="checkbox" name="cbPlayers" id="cbPlayers" />
-            </td>
-            <td>
-                <input type="button" id="btnNew" value="New game" />
-            </td>
-            <td>
-                <input type="button" id="btnStats" value="Stats" />
-            </td>
-        </tr>
-    </table>
+    <fieldset>
+        <legend>Game Controls</legend>
+        <div id="controlgroup">
+            <label for="onePlayer">1 player</label>
+            <input type="radio" name="numberOfPlayers" id="onePlayer" checked>
+            <label for="twoPlayers">2 players</label>
+            <input type="radio" name="numberOfPlayers" id="twoPlayers">
+            <button id="btnNew">New game</button>
+            <button id="btnStats">Statistics</button>
+        </div>
+    </fieldset>
+    <div class="ui-widget">
+        <div id="infoBox" class="ui-state-highlight ui-corner-all">
+            <p>
+                <span id="infoBoxIcon" class="ui-icon ui-icon-info"></span>
+                <div id="infoText">Not yet started. First move: black</div>
+            </p>
+        </div>
+    </div>
+    <div id="statisticsDialog" title="Game Statistics">
+        <table id="statisticsTable">
+            <tr>
+                <th>Games Played</th>
+                <th>Won by Black</th>
+                <th>Won by White</th>
+            </tr>
+            <tr>
+                <td id="statsTotal"></td>
+                <td id="statsBlack"></td>
+                <td id="statsWhite"></td>
+            </tr>
+        </table>
+    </div>
 </div>
 
 <footer>
@@ -68,6 +81,7 @@
 </footer>
 
 <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.12.3.min.js"></script>
+<script src="jquery-ui-1.12.1/jquery-ui.min.js"></script>
 <script src="script.js"></script>
 
 </body>
