@@ -262,7 +262,7 @@ function SetWinner(b1, b2, b3) {
     $(".gamesquare[data-row='" + b1[0] + "'][data-col='" + b1[1] + "']").addClass("winnerbg");
     $(".gamesquare[data-row='" + b2[0] + "'][data-col='" + b2[1] + "']").addClass("winnerbg");
     $(".gamesquare[data-row='" + b3[0] + "'][data-col='" + b3[1] + "']").addClass("winnerbg");
-    $("#infoText").html("<strong>Winner is " + BOF.toPlay + "!</strong>");
+    $("#infoText").html("<strong>" + BOF.toPlay.capitalize() + " wins!</strong>");
 }
 
 //---------------------------------------------------------------------------------
@@ -430,8 +430,32 @@ function ChooseMove() {
             } else if (BOF.moves === 5) {
                 ballToMove = "wb3";
             } else {
-                // TODO: better logic for selecting
-                ballToMove = ("wb" + Math.floor((Math.random() * 3) + 1));
+                while (true) {
+                    // Attempt to not select a ball that has two black balls on the same row/column/diagonal
+                    ballToMove = ("wb" + Math.floor((Math.random() * 3) + 1));
+                    oldLocation = GetRowCol(ballToMove);
+                    str = BOF.board[oldLocation[0]][0] + BOF.board[oldLocation[0]][1] + BOF.board[oldLocation[0]][2];
+                    if ((str.split("bb").length - 1) === 2) {
+                        continue;
+                    }
+                    str = BOF.board[0][oldLocation[1]] + BOF.board[1][oldLocation[1]] + BOF.board[2][oldLocation[1]];
+                    if ((str.split("bb").length - 1) === 2) {
+                        continue;
+                    }
+                    if (oldLocation.equals([0, 0]) || oldLocation.equals([1, 1]) || oldLocation.equals([2, 2])) {
+                        str = BOF.board[0][0] + BOF.board[1][1] + BOF.board[2][2];
+                        if ((str.split("bb").length - 1) === 2) {
+                            continue;
+                        }
+                    }
+                    if (oldLocation.equals([0, 2]) || oldLocation.equals([1, 1]) || oldLocation.equals([2, 0])) {
+                        str = BOF.board[0][2] + BOF.board[1][1] + BOF.board[2][0];
+                        if ((str.split("bb").length - 1) === 2) {
+                            continue;
+                        }
+                    }
+                    break; // Accept this move
+                }
             }
             oldLocation = GetRowCol(ballToMove);
 
@@ -513,27 +537,55 @@ function ChooseMove() {
     } // Moves >= 3
 
     // Not enough moves yet or no winning/blocking move found: move randomly
-    // TODO: should have logic to not create an "opening"
     if (newLocation.equals([-1, -1])) {
-        console.log(".random");
-        if (BOF.moves == 1) {
+        if (BOF.moves === 1) {
             ballToMove = "wb1";
-        } else if (BOF.moves == 3) {
+        } else if (BOF.moves === 3) {
             ballToMove = "wb2";
-        } else if (BOF.moves == 5) {
+        } else if (BOF.moves === 5) {
             ballToMove = "wb3";
         } else {
-            ballToMove = ("wb" + Math.floor((Math.random() * 3) + 1));
+            while (true) {
+                // Attempt to not select a ball that has two black balls on the same row/column/diagonal
+                ballToMove = ("wb" + Math.floor((Math.random() * 3) + 1));
+                oldLocation = GetRowCol(ballToMove);
+                str = BOF.board[oldLocation[0]][0] + BOF.board[oldLocation[0]][1] + BOF.board[oldLocation[0]][2];
+                if ((str.split("bb").length - 1) === 2) {
+                    continue;
+                }
+                str = BOF.board[0][oldLocation[1]] + BOF.board[1][oldLocation[1]] + BOF.board[2][oldLocation[1]];
+                if ((str.split("bb").length - 1) === 2) {
+                    continue;
+                }
+                if (oldLocation.equals([0, 0]) || oldLocation.equals([1, 1]) || oldLocation.equals([2, 2])) {
+                    str = BOF.board[0][0] + BOF.board[1][1] + BOF.board[2][2];
+                    if ((str.split("bb").length - 1) === 2) {
+                        continue;
+                    }
+                }
+                if (oldLocation.equals([0, 2]) || oldLocation.equals([1, 1]) || oldLocation.equals([2, 0])) {
+                    str = BOF.board[0][2] + BOF.board[1][1] + BOF.board[2][0];
+                    if ((str.split("bb").length - 1) === 2) {
+                        continue;
+                    }
+                }
+                break; // Accept this move
+            }
         }
         oldLocation = GetRowCol(ballToMove);
 
-        var i = 0;
-        var j = 0;
-        do {
-            i = Math.floor((Math.random() * 3));
-            j = Math.floor((Math.random() * 3));
-        } while (!IsFree(-1, i, j));
-        newLocation = [i, j];
+        // Claim center spot if not taken
+        if (IsFree(-1, 1, 1)) {
+            newLocation = [1, 1];
+        } else {
+            var i = 0;
+            var j = 0;
+            do {
+                i = Math.floor((Math.random() * 3));
+                j = Math.floor((Math.random() * 3));
+            } while (!IsFree(-1, i, j));
+            newLocation = [i, j];
+        }
     }
 
     console.log(".ballToMove: " + ballToMove);
@@ -578,4 +630,13 @@ Array.prototype.equals = function (arr) {
         }
     }
     return true;
+}
+
+//---------------------------------------------------------------------------------
+// String.prototype.capitalize
+// A method for capitalizing the first letter of a string
+// returns result string
+//---------------------------------------------------------------------------------
+String.prototype.capitalize = function () {
+    return this.charAt(0).toUpperCase() + this.slice(1);
 }
