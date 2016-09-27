@@ -298,7 +298,7 @@ function IsInArray(loc, locarr) {
 //---------------------------------------------------------------------------------
 // function ChooseMove
 // Picks a move for the computer in a one player game.
-// returns nothing
+// returns Promise object
 //---------------------------------------------------------------------------------
 function ChooseMove() {
     var w1 = GetRowCol("wb1");
