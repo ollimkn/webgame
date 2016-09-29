@@ -102,6 +102,10 @@ label {
     text-align: center;
 }
 
+#gameboard td {
+    background-image: url("board.png");
+}
+
 .dragsquare {
     border: 1px dashed black !important;
 }
@@ -113,6 +117,7 @@ label {
     height: 90px;
     width: 90px;
 }
+
 
 #controls {
     margin-left: auto;
