@@ -128,5 +128,6 @@ label {
 }
 
 .winnerbg {
-    background-color: coral !important;
+    background-image: none !important;
+    background-color: darkolivegreen !important;
 }
